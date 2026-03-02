@@ -11,13 +11,7 @@ logger = logging.getLogger(__name__)
 DEFAULT_CONFIG = {
     'yandex_token': '',
     'export': {
-        'default_format': 'json',
-        'default_filename': 'yandex_export',
-        'default_type': 'all'
-    },
-    'display': {
-        'show_track_count_preview': True,
-        'tracks_per_page': 20
+        'default_filename': 'yandex_export'
     }
 }
 
@@ -108,11 +102,6 @@ class Config:
     def token(self, value: str):
         """Установка токена."""
         self.set('yandex_token', value)
-    
-    @property
-    def default_format(self) -> str:
-        """Формат экспорта по умолчанию."""
-        return self.get('export.default_format', 'json')
     
     @property
     def default_filename(self) -> str:
