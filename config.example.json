@@ -1,0 +1,12 @@
+{
+    "yandex_token": "",
+    "export": {
+        "default_format": "json",
+        "default_filename": "yandex_export",
+        "default_type": "all"
+    },
+    "display": {
+        "show_track_count_preview": true,
+        "tracks_per_page": 20
+    }
+}
