@@ -45,28 +45,6 @@ class Menu:
                 print('❌ Неверный выбор. Попробуйте снова.')
 
     @staticmethod
-    def show_likes_menu() -> str:
-        """Показать меню экспорта лайкнутых треков."""
-        print('\n' + Menu.DASH)
-        print('ЭКСПОРТ "МНЕ НРАВИТСЯ":')
-        print(Menu.DASH)
-        print('  [1] Экспортировать все треки')
-        print('  [2] Экспортировать только доступные треки')
-        print('  [3] Экспортировать только недоступные треки')
-        print('  [4] Показать список треков')
-        print('  [0] Назад')
-        print(Menu.DASH)
-
-        while True:
-            choice = input('Ваш выбор (0-4): ').strip()
-
-            if choice in ('0', '1', '2', '3', '4'):
-                return choice
-            else:
-                logger.warning(f'Пользователь ввёл неверный выбор: {choice}')
-                print('❌ Неверный выбор. Попробуйте снова.')
-
-    @staticmethod
     def show_playlists_menu() -> str:
         """Показать меню экспорта плейлистов."""
         print('\n' + Menu.DASH)
@@ -88,24 +66,19 @@ class Menu:
                 print('❌ Неверный выбор. Попробуйте снова.')
 
     @staticmethod
-    def show_settings_menu(config) -> str:
+    def show_settings_menu() -> str:
         """Показать меню настроек."""
         print('\n' + Menu.DASH)
         print('НАСТРОЙКИ:')
         print(Menu.DASH)
-        print(f'  Текущий формат: {config.default_format}')
-        print(f'  Текущее имя файла: {config.default_filename}')
-        print(Menu.DASH)
-        print('  [1] Изменить формат по умолчанию')
-        print('  [2] Изменить имя файла по умолчанию')
-        print('  [3] Как получить токен?')
+        print('  [1] Как получить токен?')
         print('  [0] Назад')
         print(Menu.DASH)
 
         while True:
-            choice = input('Ваш выбор (0-3): ').strip()
+            choice = input('Ваш выбор (0-1): ').strip()
 
-            if choice in ('0', '1', '2', '3'):
+            if choice in ('0', '1'):
                 return choice
             else:
                 logger.warning(f'Пользователь ввёл неверный выбор: {choice}')
@@ -149,23 +122,33 @@ class Menu:
             print('  [3] Как получить токен?')
             print(Menu.DASH)
 
-            choice = input('Ваш выбор (1-3): ').strip()
+            while True:
+                choice = input('Ваш выбор (1-3): ').strip()
 
-            if choice == '2' or choice == '3':
-                if choice == '3':
+                if choice == '1':
+                    logger.info('Пользователь выбрал: использовать сохранённый токен')
+                    return saved_token, False
+                elif choice == '2':
+                    token = input('\nВведите OAuth-токен Яндекс.Музыки: ').strip()
+                    if not token:
+                        print('[ERROR] Токен не введён!')
+                        logger.warning('Пользователь не ввёл токен')
+                        return None, False
+                    logger.info('Пользователь ввёл новый токен')
+                    return token, False
+                elif choice == '3':
                     Menu.show_token_help()
                     logger.info('Пользователь выбрал: показать инструкцию по токену')
-
-                token = input('\nВведите OAuth-токен Яндекс.Музыки: ').strip()
-                if not token:
-                    print('[ERROR] Токен не введён!')
-                    logger.warning('Пользователь не ввёл токен')
-                    return None, False
-                logger.info('Пользователь ввёл новый токен')
-                return token, False
-
-            logger.info('Пользователь выбрал: использовать сохранённый токен')
-            return saved_token, False
+                    print('\nНажмите Enter для продолжения...')
+                    input()
+                    # Показываем меню снова
+                    print('\n' + Menu.DASH)
+                    print('  [1] Использовать сохранённый токен')
+                    print('  [2] Ввести новый токен')
+                    print('  [3] Как получить токен?')
+                    print(Menu.DASH)
+                else:
+                    print('❌ Неверный выбор. Попробуйте снова.')
 
         else:
             print('\nДля получения токена:')
@@ -250,35 +233,6 @@ class Menu:
             return []
 
     @staticmethod
-    def show_likes_preview(client: YandexClient):
-        """Показать превью лайкнутых треков."""
-        print('\n' + Menu.SEPARATOR)
-        logger.info('Загрузка информации о лайкнутых треках...')
-
-        try:
-            tracks, ugc_tracks, unavailable_ids = client.get_likes_tracks()
-            available_count = len(tracks)
-            ugc_count = len(ugc_tracks)
-            unavailable_count = len(unavailable_ids)
-            total_count = available_count + ugc_count + unavailable_count
-
-            print(f'\n"МНЕ НРАВИТСЯ":')
-            print(Menu.DASH)
-            print(f'   Всего треков:   {total_count}')
-            print(f'   Доступно:       {available_count}')
-            print(f'   UGC (ваши):     {ugc_count}')
-            print(f'   Недоступно:     {unavailable_count}')
-            print(Menu.DASH)
-
-            if unavailable_count > 0:
-                print(f'\n⚠️  {unavailable_count} треков недоступны для экспорта')
-                print('   (удалены правообладателями)')
-
-        except Exception as e:
-            logger.error(f'Ошибка при загрузке лайков: {str(e)}')
-            print('[ERROR] Не удалось загрузить данные')
-
-    @staticmethod
     def show_playlists_preview(client: YandexClient):
         """Показать превью плейлистов."""
         print('\n' + Menu.SEPARATOR)
@@ -305,49 +259,6 @@ class Menu:
         except Exception as e:
             logger.error(f'Ошибка при загрузке плейлистов: {str(e)}')
             print('[ERROR] Не удалось загрузить плейлисты')
-
-    @staticmethod
-    def select_format(default_format: str = 'json') -> str:
-        """Выбор формата экспорта."""
-        print('\n' + Menu.DASH)
-        print('ВЫБЕРИТЕ ФОРМАТ ЭКСПОРТА:')
-        print(Menu.DASH)
-        print(f'  [1] JSON (рекомендуется) {"[по умолчанию]" if default_format == "json" else ""}')
-        print(f'  [2] CSV (табличный формат) {"[по умолчанию]" if default_format == "csv" else ""}')
-        print('  [3] Сохранить выбор по умолчанию')
-        print(Menu.DASH)
-
-        while True:
-            choice = input('Ваш выбор (1-3): ').strip()
-
-            if choice == '1':
-                logger.info('Пользователь выбрал: формат JSON')
-                return 'json'
-            elif choice == '2':
-                logger.info('Пользователь выбрал: формат CSV')
-                return 'csv'
-            elif choice == '3':
-                print('\n  [1] JSON')
-                print('  [2] CSV')
-                fmt_choice = input('  Какой формат сохранить по умолчанию? (1-2): ').strip()
-                if fmt_choice == '1':
-                    logger.info('Пользователь выбрал: сохранить формат JSON по умолчанию')
-                    return 'json'
-                else:
-                    logger.info('Пользователь выбрал: сохранить формат CSV по умолчанию')
-                    return 'csv'
-            else:
-                logger.warning(f'Пользователь ввёл неверный выбор формата: {choice}')
-                print('❌ Неверный выбор. Попробуйте снова.')
-
-    @staticmethod
-    def get_filename(default_filename: str = 'yandex_export') -> str:
-        """Получение имени файла."""
-        print('\n' + Menu.DASH)
-        filename = input(f'Имя файла для экспорта (Enter = {default_filename}): ').strip()
-        result = filename if filename else default_filename
-        logger.info(f'Пользователь ввёл имя файла: {result}')
-        return result
 
     @staticmethod
     def show_export_start():
