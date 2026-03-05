@@ -66,22 +66,19 @@ class Menu:
                 print('❌ Неверный выбор. Попробуйте снова.')
 
     @staticmethod
-    def show_settings_menu(config) -> str:
+    def show_settings_menu() -> str:
         """Показать меню настроек."""
         print('\n' + Menu.DASH)
         print('НАСТРОЙКИ:')
         print(Menu.DASH)
-        print(f'  Имя файла по умолчанию: {config.default_filename}')
-        print(Menu.DASH)
-        print('  [1] Изменить имя файла по умолчанию')
-        print('  [2] Как получить токен?')
+        print('  [1] Как получить токен?')
         print('  [0] Назад')
         print(Menu.DASH)
 
         while True:
-            choice = input('Ваш выбор (0-2): ').strip()
+            choice = input('Ваш выбор (0-1): ').strip()
 
-            if choice in ('0', '1', '2'):
+            if choice in ('0', '1'):
                 return choice
             else:
                 logger.warning(f'Пользователь ввёл неверный выбор: {choice}')
@@ -262,15 +259,6 @@ class Menu:
         except Exception as e:
             logger.error(f'Ошибка при загрузке плейлистов: {str(e)}')
             print('[ERROR] Не удалось загрузить плейлисты')
-
-    @staticmethod
-    def get_filename(default_filename: str = 'yandex_export') -> str:
-        """Получение имени файла."""
-        print('\n' + Menu.DASH)
-        filename = input(f'Имя файла для экспорта (Enter = {default_filename}): ').strip()
-        result = filename if filename else default_filename
-        logger.info(f'Пользователь ввёл имя файла: {result}')
-        return result
 
     @staticmethod
     def show_export_start():

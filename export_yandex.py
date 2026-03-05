@@ -68,9 +68,10 @@ def export_likes(client: YandexClient, exporter: Exporter, filename: str, output
     return [f'{filename}_tracks.{output_format}']
 
 
-def export_playlists(client: YandexClient, exporter: Exporter, filename: str, selected_indices: list = None, token: str = None):
+def export_playlists(client: YandexClient, exporter: Exporter, selected_indices: list = None, token: str = None):
     """Экспорт плейлистов."""
     playlists = client.get_playlists()
+    exported_files = []
 
     if selected_indices:
         # Фильтруем выбранные плейлисты
@@ -78,12 +79,19 @@ def export_playlists(client: YandexClient, exporter: Exporter, filename: str, se
         if not filtered_playlists:
             print('\n[INFO] Не выбрано плейлистов для экспорта')
             return []
-        exporter.export_playlists(filtered_playlists, filename, 'json', token=token)
-        return [f'{filename}_playlists.json']
+        # Экспортируем каждый плейлист в отдельный файл
+        for playlist in filtered_playlists:
+            filename = exporter._sanitize_filename(playlist.title)
+            exporter.export_playlists([playlist], filename, 'json', token=token)
+            exported_files.append(f'{filename}_playlists.json')
     else:
         # Все плейлисты
-        exporter.export_playlists(playlists, filename, 'json', token=token)
-        return [f'{filename}_playlists.json']
+        for playlist in playlists:
+            filename = exporter._sanitize_filename(playlist.title)
+            exporter.export_playlists([playlist], filename, 'json', token=token)
+            exported_files.append(f'{filename}_playlists.json')
+
+    return exported_files
 
 
 def main():
@@ -120,6 +128,18 @@ def main():
     # Инициализация экспортера
     exporter = Exporter()
 
+    # Получаем логин пользователя для структуры папок
+    try:
+        me = client.client.me
+        user_login = me.account.login
+        exporter.set_user_login(user_login)
+        log_logger.info(f'Логин пользователя: {user_login}')
+        print(f'\n[OK] Пользователь: {user_login}')
+        print(f'📁 Экспорт в папку: exports/{user_login}/json/')
+    except Exception as e:
+        log_logger.warning(f'Не удалось получить логин: {str(e)}')
+        user_login = None
+
     # Главный цикл меню
     while True:
         choice = Menu.show_main_menu()
@@ -130,11 +150,9 @@ def main():
 
         elif choice == '1':
             # Экспорт "Мне нравится"
-            filename = Menu.get_filename(config.default_filename)
-
-            # Экспорт всех треков в JSON
+            # Экспорт всех треков в JSON с фиксированным именем
             Menu.show_export_start()
-            exported_files = export_likes(client, exporter, filename, 'json', token)
+            exported_files = export_likes(client, exporter, 'likes', 'json', token)
 
             if exported_files:
                 Menu.show_export_complete(exported_files)
@@ -154,9 +172,6 @@ def main():
                     Menu.show_playlists_preview(client)
                     continue
 
-                # Имя файла
-                filename = Menu.get_filename(config.default_filename)
-
                 # Выбор плейлистов
                 selected_indices = None
 
@@ -169,7 +184,7 @@ def main():
 
                 # Экспорт в JSON
                 Menu.show_export_start()
-                exported_files = export_playlists(client, exporter, filename, selected_indices, token)
+                exported_files = export_playlists(client, exporter, selected_indices, token)
 
                 if exported_files:
                     Menu.show_export_complete(exported_files)
@@ -179,21 +194,12 @@ def main():
         elif choice == '3':
             # Настройки
             while True:
-                settings_choice = Menu.show_settings_menu(config)
+                settings_choice = Menu.show_settings_menu()
 
                 if settings_choice == '0':
                     break
 
                 elif settings_choice == '1':
-                    # Изменить имя файла по умолчанию
-                    print('\n' + Menu.DASH)
-                    new_filename = input(f'Новое имя файла (Enter = {config.default_filename}): ').strip()
-                    if new_filename:
-                        config.set('export.default_filename', new_filename)
-                        print(f'\n[OK] Имя файла по умолчанию изменено на {new_filename}')
-                        log_logger.info('Имя файла по умолчанию изменено: %s', new_filename)
-
-                elif settings_choice == '2':
                     # Как получить токен
                     Menu.show_token_help()
 

@@ -5,6 +5,7 @@
 import json
 import csv
 import logging
+import re
 import requests
 from pathlib import Path
 from typing import List, Dict, Any
@@ -18,6 +19,24 @@ class Exporter:
     def __init__(self, output_dir: str = 'exports'):
         self.output_dir = Path(output_dir)
         self.output_dir.mkdir(exist_ok=True)
+        self.user_login = None
+        self.user_dir = None
+
+    def set_user_login(self, login: str):
+        """Установить логин пользователя для структуры папок."""
+        self.user_login = login
+        # Создаём структуру: exports/{login}/json/
+        self.user_dir = self.output_dir / login / 'json'
+        self.user_dir.mkdir(parents=True, exist_ok=True)
+
+    def _sanitize_filename(self, name: str) -> str:
+        """Очистка имени файла от запрещённых символов."""
+        # Заменяем запрещённые символы на подчёркивание
+        sanitized = re.sub(r'[<>:"/\\|?*]', '_', name)
+        # Обрезаем длинные имена (макс. 100 символов)
+        if len(sanitized) > 100:
+            sanitized = sanitized[:100]
+        return sanitized.strip()
 
     def export_tracks(self, tracks, filename: str, format: str = 'json', unavailable_tracks: list = None, unavailable_only: bool = False):
         """Экспорт треков.
@@ -554,8 +573,10 @@ class Exporter:
     
     def _save(self, data: List[Dict], filename: str, format: str):
         """Сохранение данных в файл."""
-        filepath = self.output_dir / f'{filename}.{format}'
-        
+        # Используем пользовательскую папку если login установлен
+        base_dir = self.user_dir if self.user_dir else self.output_dir
+        filepath = base_dir / f'{filename}.{format}'
+
         if format == 'json':
             self._save_json(data, filepath)
         elif format == 'csv':

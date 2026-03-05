@@ -10,9 +10,7 @@ logger = logging.getLogger(__name__)
 
 DEFAULT_CONFIG = {
     'yandex_token': '',
-    'export': {
-        'default_filename': 'yandex_export'
-    }
+    'export': {}
 }
 
 
@@ -102,8 +100,3 @@ class Config:
     def token(self, value: str):
         """Установка токена."""
         self.set('yandex_token', value)
-    
-    @property
-    def default_filename(self) -> str:
-        """Имя файла по умолчанию."""
-        return self.get('export.default_filename', 'yandex_export')

@@ -1,6 +1,4 @@
 {
     "yandex_token": "",
-    "export": {
-        "default_filename": "yandex_export"
-    }
+    "export": {}
 }
