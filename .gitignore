@@ -54,6 +54,8 @@ yandex_export_*.csv
 *_albums.csv
 *_artists.json
 *_artists.csv
+*_tracks.txt
+*_playlists.txt
 
 # Временные файлы
 *.tmp

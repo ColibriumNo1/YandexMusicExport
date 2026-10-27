@@ -10,7 +10,11 @@ logger = logging.getLogger(__name__)
 
 DEFAULT_CONFIG = {
     'yandex_token': '',
-    'export': {}
+    'export': {},
+    'spotify': {
+        'client_id': '',
+        'client_secret': ''
+    }
 }
 
 
@@ -100,3 +104,23 @@ class Config:
     def token(self, value: str):
         """Установка токена."""
         self.set('yandex_token', value)
+
+    @property
+    def spotify_client_id(self) -> str:
+        """Client ID Spotify."""
+        return self.get('spotify.client_id', '')
+
+    @spotify_client_id.setter
+    def spotify_client_id(self, value: str):
+        """Установка Client ID Spotify."""
+        self.set('spotify.client_id', value)
+
+    @property
+    def spotify_client_secret(self) -> str:
+        """Client Secret Spotify."""
+        return self.get('spotify.client_secret', '')
+
+    @spotify_client_secret.setter
+    def spotify_client_secret(self, value: str):
+        """Установка Client Secret Spotify."""
+        self.set('spotify.client_secret', value)
